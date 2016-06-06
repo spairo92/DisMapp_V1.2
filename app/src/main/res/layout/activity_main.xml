@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="horizontal"
+    android:weightSum="1">
+
+
+    <FrameLayout
+        android:layout_width="match_parent"
+        android:layout_height="133dp"
+        android:background="@drawable/background">
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="40dp"
+            android:textAppearance="?android:attr/textAppearanceMedium"
+            android:text="   Your local disability transit map"
+            android:id="@+id/textView2"
+            android:layout_gravity="center_horizontal|bottom"
+            android:textColor="@color/abc_primary_text_disable_only_material_dark" />
+
+        <ImageView
+            android:id="@+id/imageView"
+            android:layout_width="wrap_content"
+            android:layout_height="90dp"
+            android:src="@drawable/dis_icon"
+            android:layout_gravity="left|top" />
+
+        <TextView
+            android:layout_width="183dp"
+            android:layout_height="46dp"
+            android:textAppearance="?android:attr/textAppearanceLarge"
+            android:text="DisMapp"
+            android:id="@+id/textView"
+            android:layout_gravity="center"
+            android:textColor="@color/abc_primary_text_disable_only_material_dark" />
+    </FrameLayout>
+
+    <FrameLayout
+        android:orientation="vertical"
+        android:layout_width="196dp"
+        android:layout_height="369dp"
+        android:layout_row="17"
+        android:layout_column="0"
+        android:layout_gravity="left|center_vertical|bottom">
+
+        <ImageButton
+            android:id="@+id/imageButtonDirection"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:onClick="onClick"
+            android:src="@drawable/one"
+            android:layout_gravity="center_horizontal|top"
+            android:background="#ffffff" />
+
+        <ImageButton
+            android:id="@+id/imageButtonMark"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:onClick="onClick"
+            android:src="@drawable/three"
+            android:layout_gravity="center"
+            android:background="#ffffff" />
+
+    </FrameLayout>
+
+    <FrameLayout
+        android:orientation="vertical"
+        android:layout_width="173dp"
+        android:layout_height="369dp"
+        android:layout_gravity="bottom|right">
+
+        <ImageButton
+            android:id="@+id/imageButtonRoute"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:onClick="onClick"
+            android:src="@drawable/two"
+            android:layout_gravity="center_horizontal|top"
+            android:background="#ffffff" />
+
+        <ImageButton
+            android:id="@+id/imageButtonHelp"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:onClick="onClick"
+            android:src="@drawable/four"
+            android:layout_gravity="center"
+            android:background="#ffffff" />
+
+    </FrameLayout>
+
+
+</FrameLayout>
