@@ -1,13 +1,17 @@
 package com.example.spairo.dismapp_v12;
 
 import android.content.pm.PackageManager;
+import android.database.Cursor;
 import android.graphics.Color;
+import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.FragmentActivity;
+import android.support.v4.app.LoaderManager;
+import android.support.v4.content.CursorLoader;
+import android.support.v4.content.Loader;
 import android.util.Log;
-import android.view.Menu;
 import android.view.View;
 import android.widget.Button;
 
@@ -34,7 +38,7 @@ import java.util.List;
 /**
  * Created by Spairo on 5/27/2016.
  */
-public class GetDirection extends FragmentActivity {
+public class GetDirection extends FragmentActivity implements LoaderManager.LoaderCallbacks<Cursor> {
     GoogleMap map;
     ArrayList<LatLng> markerPoints;
 
@@ -60,6 +64,9 @@ public class GetDirection extends FragmentActivity {
             return;
         }
         map.setMyLocationEnabled(true);
+
+        // Invoke LoaderCallbacks to retrieve and draw already saved locations in map
+        getSupportLoaderManager().initLoader(0, null, this);
 
         //Move camera over greece
         LatLng greece = new LatLng(39.0742, 21.8243);
@@ -211,6 +218,76 @@ public class GetDirection extends FragmentActivity {
         return data;
     }
 
+    private void drawMarker(LatLng point){
+        // Creating an instance of MarkerOptions
+        MarkerOptions markerOptions = new MarkerOptions();
+
+        // Setting latitude and longitude for the marker
+        markerOptions.position(point);
+
+        // Adding marker on the Google Map
+        map.addMarker(markerOptions);
+    }
+
+    @Override
+    public Loader<Cursor> onCreateLoader(int id, Bundle args) {
+        // Uri to the content provider LocationsContentProvider
+        Uri uri = LocationsContentProvider.CONTENT_URI;
+
+        // Fetches all the rows from locations table
+        return new CursorLoader(this, uri, null, null, null, null);
+    }
+
+    @Override
+    public void onLoadFinished(Loader<Cursor> loader, Cursor arg1) {
+
+        int locationCount = 0;
+        double lat=0;
+        double lng=0;
+        float zoom=0;
+
+        // Number of locations available in the SQLite database table
+        locationCount = arg1.getCount();
+
+        // Move the current record pointer to the first row of the table
+        arg1.moveToFirst();
+
+        for(int i=0;i<locationCount;i++){
+
+            // Get the latitude
+            lat = arg1.getDouble(arg1.getColumnIndex(LocationsDB.FIELD_LAT));
+
+            // Get the longitude
+            lng = arg1.getDouble(arg1.getColumnIndex(LocationsDB.FIELD_LNG));
+
+            // Get the zoom level
+            zoom = arg1.getFloat(arg1.getColumnIndex(LocationsDB.FIELD_ZOOM));
+
+            // Creating an instance of LatLng to plot the location in Google Maps
+            LatLng location = new LatLng(lat, lng);
+
+            // Drawing the marker in the Google Maps
+            drawMarker(location);
+
+            // Traverse the pointer to the next row
+            arg1.moveToNext();
+        }
+
+        if(locationCount>0){
+            // Moving CameraPosition to last clicked position
+            map.moveCamera(CameraUpdateFactory.newLatLng(new LatLng(lat,lng)));
+
+            // Setting the zoom level in the map on last position  is clicked
+            map.animateCamera(CameraUpdateFactory.zoomTo(zoom));
+
+        }
+    }
+
+    @Override
+    public void onLoaderReset(Loader<Cursor> loader) {
+
+    }
+
     // Fetches data from url passed
     private class DownloadTask extends AsyncTask<String, Void, String> {
 
@@ -303,10 +380,4 @@ public class GetDirection extends FragmentActivity {
         }
     }
 
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        // Inflate the menu; this adds items to the action bar if it is present.
-        //getMenuInflater().inflate(R.menu.main, menu);
-        return true;
-    }
 }

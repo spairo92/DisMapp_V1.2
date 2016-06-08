@@ -10,7 +10,6 @@ import android.support.v4.app.FragmentActivity;
 import android.support.v4.app.LoaderManager.LoaderCallbacks;
 import android.support.v4.content.CursorLoader;
 import android.support.v4.content.Loader;
-import android.view.Menu;
 import android.widget.Toast;
 
 import com.google.android.gms.common.ConnectionResult;
@@ -140,16 +139,9 @@ public class AddMark extends FragmentActivity implements LoaderCallbacks<Cursor>
         }
     }
 
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        // Inflate the menu; this adds items to the action bar if it is present.
-        //getMenuInflater().inflate(R.menu.main, menu);
-        return true;
-    }
 
     @Override
-    public Loader<Cursor> onCreateLoader(int arg0,
-                                         Bundle arg1) {
+    public Loader<Cursor> onCreateLoader(int arg0, Bundle arg1) {
 
         // Uri to the content provider LocationsContentProvider
         Uri uri = LocationsContentProvider.CONTENT_URI;
@@ -161,8 +153,7 @@ public class AddMark extends FragmentActivity implements LoaderCallbacks<Cursor>
 
 
     @Override
-    public void onLoadFinished(Loader<Cursor> arg0,
-                               Cursor arg1) {
+    public void onLoadFinished(Loader<Cursor> arg0, Cursor arg1) {
         int locationCount = 0;
         double lat=0;
         double lng=0;
