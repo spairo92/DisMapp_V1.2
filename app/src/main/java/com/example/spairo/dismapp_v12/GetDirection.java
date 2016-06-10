@@ -13,7 +13,6 @@ import android.support.v4.content.CursorLoader;
 import android.support.v4.content.Loader;
 import android.util.Log;
 import android.view.View;
-import android.widget.Button;
 
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
@@ -21,7 +20,9 @@ import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
+import com.google.android.gms.maps.model.Polyline;
 import com.google.android.gms.maps.model.PolylineOptions;
+import com.melnykov.fab.FloatingActionButton;
 
 import org.json.JSONObject;
 
@@ -40,6 +41,8 @@ import java.util.List;
  */
 public class GetDirection extends FragmentActivity implements LoaderManager.LoaderCallbacks<Cursor> {
     GoogleMap map;
+    //keep track of the polyline
+    Polyline polyline;
     ArrayList<LatLng> markerPoints;
 
     @Override
@@ -53,8 +56,8 @@ public class GetDirection extends FragmentActivity implements LoaderManager.Load
         // Getting reference to SupportMapFragment of the activity_main
         SupportMapFragment fm = (SupportMapFragment) getSupportFragmentManager().findFragmentById(R.id.map);
 
-        // Getting reference to Button
-        Button btnDraw = (Button) findViewById(R.id.button);
+        //Getting reference to Button
+        FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
 
         // Getting Map for the SupportMapFragment
         map = fm.getMap();
@@ -64,6 +67,9 @@ public class GetDirection extends FragmentActivity implements LoaderManager.Load
             return;
         }
         map.setMyLocationEnabled(true);
+
+        polyline = map.addPolyline(new PolylineOptions()
+                .add(new LatLng(51.5, -0.1), new LatLng(40.7, -74.0)).visible(false));
 
         // Invoke LoaderCallbacks to retrieve and draw already saved locations in map
         getSupportLoaderManager().initLoader(0, null, this);
@@ -124,12 +130,13 @@ public class GetDirection extends FragmentActivity implements LoaderManager.Load
         });
 
         // Click event handler for Button btn_draw
-        btnDraw.setOnClickListener(new View.OnClickListener() {
+        fab.setOnClickListener(new View.OnClickListener() {
 
             @Override
             public void onClick(View v) {
                 // Checks, whether start and end locations are captured
                 if(markerPoints.size() >= 2){
+                    polyline.remove();
                     LatLng origin = markerPoints.get(0);
                     LatLng dest = markerPoints.get(1);
 
@@ -376,7 +383,7 @@ public class GetDirection extends FragmentActivity implements LoaderManager.Load
             }
 
             // Drawing polyline in the Google Map for the i-th route
-            map.addPolyline(lineOptions);
+            polyline = map.addPolyline(lineOptions);
         }
     }
 

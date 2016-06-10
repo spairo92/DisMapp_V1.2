@@ -19,6 +19,7 @@ import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.GoogleMap.OnMapClickListener;
 import com.google.android.gms.maps.GoogleMap.OnMapLongClickListener;
 import com.google.android.gms.maps.SupportMapFragment;
+import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
 
@@ -112,7 +113,7 @@ public class AddMark extends FragmentActivity implements LoaderCallbacks<Cursor>
         MarkerOptions markerOptions = new MarkerOptions();
 
         // Setting latitude and longitude for the marker
-        markerOptions.position(point);
+        markerOptions.position(point).title("title").snippet("this is the snippet").icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_ORANGE));
 
         // Adding marker on the Google Map
         googleMap.addMarker(markerOptions);
