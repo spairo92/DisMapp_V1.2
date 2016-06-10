@@ -1,6 +1,2 @@
-# DisMapp
-
-##Version
-1.2
-
-##In progress...
+# DisMapp_V1.2
+bachelor thesis project 
