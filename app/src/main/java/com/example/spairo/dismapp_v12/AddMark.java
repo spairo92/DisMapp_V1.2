@@ -1,15 +1,22 @@
 package com.example.spairo.dismapp_v12;
 
+import android.app.AlertDialog;
 import android.app.Dialog;
 import android.content.ContentValues;
+import android.content.DialogInterface;
+import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.FragmentActivity;
 import android.support.v4.app.LoaderManager.LoaderCallbacks;
 import android.support.v4.content.CursorLoader;
 import android.support.v4.content.Loader;
+import android.view.View;
+import android.widget.Button;
+import android.widget.EditText;
 import android.widget.Toast;
 
 import com.google.android.gms.common.ConnectionResult;
@@ -19,12 +26,16 @@ import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.GoogleMap.OnMapClickListener;
 import com.google.android.gms.maps.GoogleMap.OnMapLongClickListener;
 import com.google.android.gms.maps.SupportMapFragment;
+import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
 
 public class AddMark extends FragmentActivity implements LoaderCallbacks<Cursor> {
 
-    GoogleMap googleMap;
+    GoogleMap map;
+    String[] LIST = {"good","average","bad"};
+    String color = "asdf";
+    String title, comment;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -48,51 +59,108 @@ public class AddMark extends FragmentActivity implements LoaderCallbacks<Cursor>
             SupportMapFragment fm = (SupportMapFragment) getSupportFragmentManager().findFragmentById(R.id.map);
 
             // Getting GoogleMap object from the fragment
-            googleMap = fm.getMap();
+            map = fm.getMap();
+
+            //Enabling MyLocation Layer on Map
+            if (ActivityCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+                return;
+            }
+            map.setMyLocationEnabled(true);
 
             // Invoke LoaderCallbacks to retrieve and draw already saved locations in map
             getSupportLoaderManager().initLoader(0, null, this);
+
+            //Move camera over greece
+            LatLng athens = new LatLng(37.9430, 23.6470);
+            map.moveCamera(CameraUpdateFactory.newLatLngZoom(athens, 13));
         }
 
-        googleMap.setOnMapClickListener(new OnMapClickListener() {
+        map.setOnMapClickListener(new OnMapClickListener() {
 
             @Override
-            public void onMapClick(LatLng point) {
+            public void onMapClick(final LatLng point) {
 
-
-                // Drawing marker on the map
-                drawMarker(point);
-
-                // Creating an instance of ContentValues
-                ContentValues contentValues = new ContentValues();
-
-                // Setting latitude in ContentValues
-                contentValues.put(LocationsDB.FIELD_LAT, point.latitude );
-
-                // Setting longitude in ContentValues
-                contentValues.put(LocationsDB.FIELD_LNG, point.longitude);
-
-                // Setting zoom in ContentValues
-                contentValues.put(LocationsDB.FIELD_ZOOM, googleMap.getCameraPosition().zoom);
-
-                // Creating an instance of LocationInsertTask
-                LocationInsertTask insertTask = new LocationInsertTask();
-
-                // Storing the latitude, longitude and zoom level to SQLite database
-                insertTask.execute(contentValues);
-
-                Toast.makeText(getBaseContext(), "Marker is added to the Map", Toast.LENGTH_SHORT).show();
+                AlertDialog.Builder builder = new AlertDialog.Builder(AddMark.this);
+                builder.setTitle("Select building's state ");
+                builder.setItems(LIST,new DialogInterface.OnClickListener(){
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        if(LIST[which].equals("good")) {
+                            color="green";
+                            onChoiceClick(point, color);
+                        }
+                        else if(LIST[which].equals("average")){
+                            color="orange";
+                            onChoiceClick(point, color);
+                        }
+                        else if(LIST[which].equals("bad")){
+                            color="red";
+                            onChoiceClick(point, color);
+                        }
+                    }
+                });
+                AlertDialog alertDialog = builder.create();
+                alertDialog.show();
 
             }
+            public void onChoiceClick(final LatLng point, final String color){
+                final Dialog dialog1 = new Dialog(AddMark.this);
+                dialog1.setTitle("Report Status");
+                dialog1.setContentView(R.layout.markercomment_customdialog);
+                dialog1.show();
+                final EditText titleText =(EditText)dialog1.findViewById(R.id.title);
+                final EditText commentText =(EditText)dialog1.findViewById(R.id.comment);
+                Button addButton = (Button)dialog1.findViewById(R.id.addBtn);
+
+                addButton.setOnClickListener(new View.OnClickListener(){
+                    @Override
+                    public void onClick(View v) {
+                        title = titleText.getText().toString();
+                        comment = commentText.getText().toString();
+
+                        // Drawing marker on the map
+                        drawMarker(point, color, title, comment);
+
+                        // Creating an instance of ContentValues
+                        ContentValues contentValues = new ContentValues();
+
+                        // Setting latitude in ContentValues
+                        contentValues.put(LocationsDB.FIELD_LAT, point.latitude );
+
+                        // Setting longitude in ContentValues
+                        contentValues.put(LocationsDB.FIELD_LNG, point.longitude);
+
+                        // Setting color in ContentValues
+                        contentValues.put(LocationsDB.FIELD_COLOR, color);
+
+                        // Setting title in ContentValues
+                        contentValues.put(LocationsDB.FIELD_TITLE, title);
+
+                        // Setting comment in ContentValues
+                        contentValues.put(LocationsDB.FIELD_COMMENT, comment);
+
+                        // Creating an instance of LocationInsertTask
+                        LocationInsertTask insertTask = new LocationInsertTask();
+
+                        // Storing the latitude, longitude and zoom level to SQLite database
+                        insertTask.execute(contentValues);
+
+                        Toast.makeText(getApplicationContext(), "Marker is added to the Map", Toast.LENGTH_SHORT).show();
+                        dialog1.cancel();;
+
+                    }
+                });
+            }
+
         });
 
 
-        googleMap.setOnMapLongClickListener(new OnMapLongClickListener() {
+        map.setOnMapLongClickListener(new OnMapLongClickListener() {
             @Override
             public void onMapLongClick(LatLng point) {
 
                 // Removing all markers from the Google Map
-                googleMap.clear();
+                map.clear();
 
                 // Creating an instance of LocationDeleteTask
                 LocationDeleteTask deleteTask = new LocationDeleteTask();
@@ -107,15 +175,24 @@ public class AddMark extends FragmentActivity implements LoaderCallbacks<Cursor>
     }
 
 
-    private void drawMarker(LatLng point){
+    private void drawMarker(LatLng point, String color, String title, String comment){
         // Creating an instance of MarkerOptions
         MarkerOptions markerOptions = new MarkerOptions();
 
-        // Setting latitude and longitude for the marker
-        markerOptions.position(point);
-
+        if(color.equals("green")) {
+            // Setting latitude and longitude for the marker
+            markerOptions.position(point).icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_GREEN)).title(title).snippet(comment);
+        }
+        else if(color.equals("orange")){
+            markerOptions.position(point).icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_ORANGE)).title(title).snippet(comment);
+        }
+        else if(color.equals("red")){
+            markerOptions.position(point).icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_RED)).title(title).snippet(comment);
+        }else{
+            markerOptions.position(point).icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_BLUE)).title(title).snippet(comment);
+        }
         // Adding marker on the Google Map
-        googleMap.addMarker(markerOptions);
+        map.addMarker(markerOptions);
     }
 
 
@@ -157,7 +234,7 @@ public class AddMark extends FragmentActivity implements LoaderCallbacks<Cursor>
         int locationCount = 0;
         double lat=0;
         double lng=0;
-        float zoom=0;
+        String col, tit, com;
 
         // Number of locations available in the SQLite database table
         locationCount = arg1.getCount();
@@ -173,26 +250,23 @@ public class AddMark extends FragmentActivity implements LoaderCallbacks<Cursor>
             // Get the longitude
             lng = arg1.getDouble(arg1.getColumnIndex(LocationsDB.FIELD_LNG));
 
-            // Get the zoom level
-            zoom = arg1.getFloat(arg1.getColumnIndex(LocationsDB.FIELD_ZOOM));
+            // Get color
+            col = arg1.getString(arg1.getColumnIndex(LocationsDB.FIELD_COLOR));
+
+            // Get title
+            tit = arg1.getString(arg1.getColumnIndex(LocationsDB.FIELD_TITLE));
+
+            // Get comment
+            com = arg1.getString(arg1.getColumnIndex(LocationsDB.FIELD_COMMENT));
 
             // Creating an instance of LatLng to plot the location in Google Maps
             LatLng location = new LatLng(lat, lng);
 
             // Drawing the marker in the Google Maps
-            drawMarker(location);
+            drawMarker(location, col, tit, com);
 
             // Traverse the pointer to the next row
             arg1.moveToNext();
-        }
-
-        if(locationCount>0){
-            // Moving CameraPosition to last clicked position
-            googleMap.moveCamera(CameraUpdateFactory.newLatLng(new LatLng(lat,lng)));
-
-            // Setting the zoom level in the map on last position  is clicked
-            googleMap.animateCamera(CameraUpdateFactory.zoomTo(zoom));
-
         }
     }
 

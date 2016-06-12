@@ -13,7 +13,7 @@ import android.support.v4.content.CursorLoader;
 import android.support.v4.content.Loader;
 import android.util.Log;
 import android.view.View;
-import android.widget.Button;
+import android.widget.ImageButton;
 
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
@@ -21,6 +21,7 @@ import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
+import com.google.android.gms.maps.model.Polyline;
 import com.google.android.gms.maps.model.PolylineOptions;
 
 import org.json.JSONObject;
@@ -40,6 +41,7 @@ import java.util.List;
  */
 public class GetDirection extends FragmentActivity implements LoaderManager.LoaderCallbacks<Cursor> {
     GoogleMap map;
+    Polyline polyline;
     ArrayList<LatLng> markerPoints;
 
     @Override
@@ -53,8 +55,8 @@ public class GetDirection extends FragmentActivity implements LoaderManager.Load
         // Getting reference to SupportMapFragment of the activity_main
         SupportMapFragment fm = (SupportMapFragment) getSupportFragmentManager().findFragmentById(R.id.map);
 
-        // Getting reference to Button
-        Button btnDraw = (Button) findViewById(R.id.button);
+        // Getting reference to float button
+        ImageButton fab = (ImageButton) findViewById(R.id.fab);
 
         // Getting Map for the SupportMapFragment
         map = fm.getMap();
@@ -65,12 +67,15 @@ public class GetDirection extends FragmentActivity implements LoaderManager.Load
         }
         map.setMyLocationEnabled(true);
 
+        //initializing an invisible polyline
+        polyline = map.addPolyline(new PolylineOptions().add(new LatLng(51.5, -0.1), new LatLng(40.7, -74.0)).visible(false));
+
         // Invoke LoaderCallbacks to retrieve and draw already saved locations in map
         getSupportLoaderManager().initLoader(0, null, this);
 
         //Move camera over greece
-        LatLng greece = new LatLng(39.0742, 21.8243);
-        map.moveCamera(CameraUpdateFactory.newLatLngZoom(greece, 7));
+        LatLng athens = new LatLng(37.9430, 23.6470);
+        map.moveCamera(CameraUpdateFactory.newLatLngZoom(athens, 14));
 
         // Setting onclick event listener for the map
         map.setOnMapClickListener(new GoogleMap.OnMapClickListener() {
@@ -98,9 +103,9 @@ public class GetDirection extends FragmentActivity implements LoaderManager.Load
                  * for the rest of markers, the color is AZURE
                  */
                 if(markerPoints.size()==1){
-                    options.icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_GREEN));
+                    options.icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_CYAN));
                 }else if(markerPoints.size()==2){
-                    options.icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_RED));
+                    options.icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_CYAN));
                 }else{
                     options.icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_AZURE));
                 }
@@ -124,12 +129,15 @@ public class GetDirection extends FragmentActivity implements LoaderManager.Load
         });
 
         // Click event handler for Button btn_draw
-        btnDraw.setOnClickListener(new View.OnClickListener() {
+        fab.setOnClickListener(new View.OnClickListener() {
 
             @Override
             public void onClick(View v) {
                 // Checks, whether start and end locations are captured
                 if(markerPoints.size() >= 2){
+                    //remove previous direction line
+                    polyline.remove();
+
                     LatLng origin = markerPoints.get(0);
                     LatLng dest = markerPoints.get(1);
 
@@ -218,76 +226,6 @@ public class GetDirection extends FragmentActivity implements LoaderManager.Load
         return data;
     }
 
-    private void drawMarker(LatLng point){
-        // Creating an instance of MarkerOptions
-        MarkerOptions markerOptions = new MarkerOptions();
-
-        // Setting latitude and longitude for the marker
-        markerOptions.position(point);
-
-        // Adding marker on the Google Map
-        map.addMarker(markerOptions);
-    }
-
-    @Override
-    public Loader<Cursor> onCreateLoader(int id, Bundle args) {
-        // Uri to the content provider LocationsContentProvider
-        Uri uri = LocationsContentProvider.CONTENT_URI;
-
-        // Fetches all the rows from locations table
-        return new CursorLoader(this, uri, null, null, null, null);
-    }
-
-    @Override
-    public void onLoadFinished(Loader<Cursor> loader, Cursor arg1) {
-
-        int locationCount = 0;
-        double lat=0;
-        double lng=0;
-        float zoom=0;
-
-        // Number of locations available in the SQLite database table
-        locationCount = arg1.getCount();
-
-        // Move the current record pointer to the first row of the table
-        arg1.moveToFirst();
-
-        for(int i=0;i<locationCount;i++){
-
-            // Get the latitude
-            lat = arg1.getDouble(arg1.getColumnIndex(LocationsDB.FIELD_LAT));
-
-            // Get the longitude
-            lng = arg1.getDouble(arg1.getColumnIndex(LocationsDB.FIELD_LNG));
-
-            // Get the zoom level
-            zoom = arg1.getFloat(arg1.getColumnIndex(LocationsDB.FIELD_ZOOM));
-
-            // Creating an instance of LatLng to plot the location in Google Maps
-            LatLng location = new LatLng(lat, lng);
-
-            // Drawing the marker in the Google Maps
-            drawMarker(location);
-
-            // Traverse the pointer to the next row
-            arg1.moveToNext();
-        }
-
-        if(locationCount>0){
-            // Moving CameraPosition to last clicked position
-            map.moveCamera(CameraUpdateFactory.newLatLng(new LatLng(lat,lng)));
-
-            // Setting the zoom level in the map on last position  is clicked
-            map.animateCamera(CameraUpdateFactory.zoomTo(zoom));
-
-        }
-    }
-
-    @Override
-    public void onLoaderReset(Loader<Cursor> loader) {
-
-    }
-
     // Fetches data from url passed
     private class DownloadTask extends AsyncTask<String, Void, String> {
 
@@ -296,7 +234,6 @@ public class GetDirection extends FragmentActivity implements LoaderManager.Load
         protected String doInBackground(String... url) {
 
             // For storing data from web service
-
             String data = "";
 
             try{
@@ -376,8 +313,87 @@ public class GetDirection extends FragmentActivity implements LoaderManager.Load
             }
 
             // Drawing polyline in the Google Map for the i-th route
-            map.addPolyline(lineOptions);
+            polyline = map.addPolyline(lineOptions);
         }
+    }
+
+    private void drawMarker(LatLng point, String color, String title, String comment){
+        // Creating an instance of MarkerOptions
+        MarkerOptions markerOptions = new MarkerOptions();
+
+        if(color.equals("green")) {
+            // Setting latitude and longitude for the marker
+            markerOptions.position(point).icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_GREEN)).title(title).snippet(comment);
+        }
+        else if(color.equals("orange")){
+            markerOptions.position(point).icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_ORANGE)).title(title).snippet(comment);
+        }
+        else if(color.equals("red")){
+            markerOptions.position(point).icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_RED)).title(title).snippet(comment);
+        }else{
+            markerOptions.position(point).icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_BLUE)).title(title).snippet(comment);
+        }
+        // Adding marker on the Google Map
+        map.addMarker(markerOptions);
+    }
+
+
+    @Override
+    public Loader<Cursor> onCreateLoader(int arg0, Bundle arg1) {
+
+        // Uri to the content provider LocationsContentProvider
+        Uri uri = LocationsContentProvider.CONTENT_URI;
+
+        // Fetches all the rows from locations table
+        return new CursorLoader(this, uri, null, null, null, null);
+
+    }
+
+
+    @Override
+    public void onLoadFinished(Loader<Cursor> arg0, Cursor arg1) {
+        int locationCount = 0;
+        double lat=0;
+        double lng=0;
+        String col, tit, com;
+
+        // Number of locations available in the SQLite database table
+        locationCount = arg1.getCount();
+
+        // Move the current record pointer to the first row of the table
+        arg1.moveToFirst();
+
+        for(int i=0;i<locationCount;i++){
+
+            // Get the latitude
+            lat = arg1.getDouble(arg1.getColumnIndex(LocationsDB.FIELD_LAT));
+
+            // Get the longitude
+            lng = arg1.getDouble(arg1.getColumnIndex(LocationsDB.FIELD_LNG));
+
+            // Get color
+            col = arg1.getString(arg1.getColumnIndex(LocationsDB.FIELD_COLOR));
+
+            // Get title
+            tit = arg1.getString(arg1.getColumnIndex(LocationsDB.FIELD_TITLE));
+
+            // Get comment
+            com = arg1.getString(arg1.getColumnIndex(LocationsDB.FIELD_COMMENT));
+
+            // Creating an instance of LatLng to plot the location in Google Maps
+            LatLng location = new LatLng(lat, lng);
+
+            // Drawing the marker in the Google Maps
+            drawMarker(location, col, tit, com);
+
+            // Traverse the pointer to the next row
+            arg1.moveToNext();
+        }
+    }
+
+    @Override
+    public void onLoaderReset(Loader<Cursor> arg0) {
+        // TODO Auto-generated method stub
     }
 
 }
