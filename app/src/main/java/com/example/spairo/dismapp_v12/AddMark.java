@@ -34,7 +34,7 @@ public class AddMark extends FragmentActivity implements LoaderCallbacks<Cursor>
 
     GoogleMap map;
     String[] LIST = {"good","average","bad"};
-    String color = "asdf";
+    String color = "whatever";
     String title, comment;
 
     @Override
@@ -79,7 +79,7 @@ public class AddMark extends FragmentActivity implements LoaderCallbacks<Cursor>
 
             @Override
             public void onMapClick(final LatLng point) {
-
+                //Initialize choices dialog box
                 AlertDialog.Builder builder = new AlertDialog.Builder(AddMark.this);
                 builder.setTitle("Select building's state ");
                 builder.setItems(LIST,new DialogInterface.OnClickListener(){
@@ -104,18 +104,23 @@ public class AddMark extends FragmentActivity implements LoaderCallbacks<Cursor>
 
             }
             public void onChoiceClick(final LatLng point, final String color){
+                //Initialize comments dialog box
                 final Dialog dialog1 = new Dialog(AddMark.this);
                 dialog1.setTitle("Report Status");
                 dialog1.setContentView(R.layout.markercomment_customdialog);
                 dialog1.show();
+                //Initializing title
                 final EditText titleText =(EditText)dialog1.findViewById(R.id.title);
+                //Initializing comment
                 final EditText commentText =(EditText)dialog1.findViewById(R.id.comment);
+                //Add Button
                 Button addButton = (Button)dialog1.findViewById(R.id.addBtn);
-
                 addButton.setOnClickListener(new View.OnClickListener(){
                     @Override
                     public void onClick(View v) {
+                        //Getting title
                         title = titleText.getText().toString();
+                        //Getting comment
                         comment = commentText.getText().toString();
 
                         // Drawing marker on the map
@@ -151,14 +156,12 @@ public class AddMark extends FragmentActivity implements LoaderCallbacks<Cursor>
                     }
                 });
             }
-
         });
 
 
         map.setOnMapLongClickListener(new OnMapLongClickListener() {
             @Override
             public void onMapLongClick(LatLng point) {
-
                 // Removing all markers from the Google Map
                 map.clear();
 
@@ -169,7 +172,6 @@ public class AddMark extends FragmentActivity implements LoaderCallbacks<Cursor>
                 deleteTask.execute();
 
                 Toast.makeText(getBaseContext(), "All markers are removed", Toast.LENGTH_LONG).show();
-
             }
         });
     }
@@ -178,9 +180,8 @@ public class AddMark extends FragmentActivity implements LoaderCallbacks<Cursor>
     private void drawMarker(LatLng point, String color, String title, String comment){
         // Creating an instance of MarkerOptions
         MarkerOptions markerOptions = new MarkerOptions();
-
+        // Setting latitude, longitude, color, title and comment for the marker
         if(color.equals("green")) {
-            // Setting latitude and longitude for the marker
             markerOptions.position(point).icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_GREEN)).title(title).snippet(comment);
         }
         else if(color.equals("orange")){

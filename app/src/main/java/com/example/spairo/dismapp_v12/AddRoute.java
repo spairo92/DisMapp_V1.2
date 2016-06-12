@@ -25,8 +25,7 @@ import com.google.android.gms.maps.model.MarkerOptions;
 public class AddRoute extends FragmentActivity {
 
     GoogleMap map;
-    String[] LIST = {"good","average","bad"};
-    String color = "asdf";
+    String color ="blue";
     String title, comment;
 
     @Override
@@ -130,7 +129,6 @@ public class AddRoute extends FragmentActivity {
                 deleteTask.execute();
 
                 Toast.makeText(getBaseContext(), "All markers are removed", Toast.LENGTH_LONG).show();
-
             }
         });
     }
@@ -140,8 +138,6 @@ public class AddRoute extends FragmentActivity {
         // Creating an instance of MarkerOptions
         MarkerOptions markerOptions = new MarkerOptions();
         markerOptions.position(point).icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_BLUE)).title(title).snippet(comment);
-        Toast.makeText(getBaseContext(), "Color problem", Toast.LENGTH_SHORT).show();
-
         // Adding marker on the Google Map
         map.addMarker(markerOptions);
     }

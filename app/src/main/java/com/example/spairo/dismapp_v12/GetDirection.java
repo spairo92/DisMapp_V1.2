@@ -317,12 +317,13 @@ public class GetDirection extends FragmentActivity implements LoaderManager.Load
         }
     }
 
+    /**Classes which have to do with information loading from database*/
     private void drawMarker(LatLng point, String color, String title, String comment){
         // Creating an instance of MarkerOptions
         MarkerOptions markerOptions = new MarkerOptions();
 
+        // Setting latitude, longitude, color, title and comment for the marker
         if(color.equals("green")) {
-            // Setting latitude and longitude for the marker
             markerOptions.position(point).icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_GREEN)).title(title).snippet(comment);
         }
         else if(color.equals("orange")){
@@ -331,6 +332,7 @@ public class GetDirection extends FragmentActivity implements LoaderManager.Load
         else if(color.equals("red")){
             markerOptions.position(point).icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_RED)).title(title).snippet(comment);
         }else{
+            //it's a way point
             markerOptions.position(point).icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_BLUE)).title(title).snippet(comment);
         }
         // Adding marker on the Google Map
@@ -340,13 +342,11 @@ public class GetDirection extends FragmentActivity implements LoaderManager.Load
 
     @Override
     public Loader<Cursor> onCreateLoader(int arg0, Bundle arg1) {
-
         // Uri to the content provider LocationsContentProvider
         Uri uri = LocationsContentProvider.CONTENT_URI;
 
         // Fetches all the rows from locations table
         return new CursorLoader(this, uri, null, null, null, null);
-
     }
 
 
