@@ -23,6 +23,11 @@ import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.maps.model.Polyline;
 import com.google.android.gms.maps.model.PolylineOptions;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 
 import org.json.JSONObject;
 
@@ -42,7 +47,12 @@ import java.util.List;
 public class GetDirection extends FragmentActivity implements LoaderManager.LoaderCallbacks<Cursor> {
     GoogleMap map;
     Polyline polyline;
+    String lineColor;
     ArrayList<LatLng> markerPoints;
+
+    FirebaseDatabase database = FirebaseDatabase.getInstance();
+    DatabaseReference goodRef = database.getReference("GoodState");
+    DatabaseReference badRef = database.getReference("BadState");
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -75,7 +85,37 @@ public class GetDirection extends FragmentActivity implements LoaderManager.Load
 
         //Move camera over greece
         LatLng athens = new LatLng(37.9430, 23.6470);
-        map.moveCamera(CameraUpdateFactory.newLatLngZoom(athens, 14));
+        map.moveCamera(CameraUpdateFactory.newLatLngZoom(athens, 18));
+
+        goodRef.addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                lineColor="green";
+                for(DataSnapshot mydata : dataSnapshot.getChildren()){
+
+                    double lat = (double) mydata.child("origin").child("latitude").getValue();
+                    double lon = (double) mydata.child("origin").child("longitude").getValue();
+                    LatLng origin = new LatLng(lat, lon);
+
+                    double lat2 = (double) mydata.child("dest").child("latitude").getValue();
+                    double lon2 = (double) mydata.child("dest").child("longitude").getValue();
+                    LatLng dest = new LatLng(lat2, lon2);
+
+                    // Getting URL to the Google Directions API
+                    String url = getDirectionsUrl(origin, dest);
+
+                    GetDirection.DownloadTask downloadTask = new GetDirection.DownloadTask();
+
+                    // Start downloading json data from Google Directions API
+                    downloadTask.execute(url);
+                }
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+
+            }
+        });
 
         // Setting onclick event listener for the map
         map.setOnMapClickListener(new GoogleMap.OnMapClickListener() {
@@ -103,11 +143,11 @@ public class GetDirection extends FragmentActivity implements LoaderManager.Load
                  * for the rest of markers, the color is AZURE
                  */
                 if(markerPoints.size()==1){
-                    options.icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_CYAN));
+                    options.icon(BitmapDescriptorFactory.fromResource(R.drawable.dot_green));
                 }else if(markerPoints.size()==2){
-                    options.icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_CYAN));
+                    options.icon(BitmapDescriptorFactory.fromResource(R.drawable.dot_red));
                 }else{
-                    options.icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_AZURE));
+                    options.icon(BitmapDescriptorFactory.fromResource(R.drawable.dot_blue));
                 }
 
                 // Add new marker to the Google Map Android API V2
@@ -120,11 +160,37 @@ public class GetDirection extends FragmentActivity implements LoaderManager.Load
 
             @Override
             public void onMapLongClick(LatLng point) {
-                // Removes all the points from Google Map
-                map.clear();
+                lineColor="red";
+                badRef.addValueEventListener(new ValueEventListener() {
+                    @Override
+                    public void onDataChange(DataSnapshot dataSnapshot) {
+                        lineColor="red";
+                        for(DataSnapshot mydata : dataSnapshot.getChildren()){
 
-                // Removes all the points in the ArrayList
-                markerPoints.clear();
+                            double lat = (double) mydata.child("origin").child("latitude").getValue();
+                            double lon = (double) mydata.child("origin").child("longitude").getValue();
+                            LatLng origin = new LatLng(lat, lon);
+
+                            double lat2 = (double) mydata.child("dest").child("latitude").getValue();
+                            double lon2 = (double) mydata.child("dest").child("longitude").getValue();
+                            LatLng dest = new LatLng(lat2, lon2);
+
+                            // Getting URL to the Google Directions API
+                            String url = getDirectionsUrl(origin, dest);
+
+                            GetDirection.DownloadTask downloadTask = new GetDirection.DownloadTask();
+
+                            // Start downloading json data from Google Directions API
+                            downloadTask.execute(url);
+                        }
+                    }
+
+                    @Override
+                    public void onCancelled(DatabaseError databaseError) {
+
+                    }
+                });
+                lineColor="blue";
             }
         });
 
@@ -138,6 +204,7 @@ public class GetDirection extends FragmentActivity implements LoaderManager.Load
                     //remove previous direction line
                     polyline.remove();
 
+                    lineColor="blue";
                     LatLng origin = markerPoints.get(0);
                     LatLng dest = markerPoints.get(1);
 
@@ -308,8 +375,14 @@ public class GetDirection extends FragmentActivity implements LoaderManager.Load
 
                 // Adding all the points in the route to LineOptions
                 lineOptions.addAll(points);
-                lineOptions.width(4);
-                lineOptions.color(Color.BLUE);
+                lineOptions.width(10);
+                if(lineColor.equals("green")) {
+                    lineOptions.color(Color.GREEN);
+                }else if(lineColor.equals("red")){
+                    lineOptions.color(Color.RED);
+                }else{
+                    lineOptions.color(Color.BLUE);
+                }
             }
 
             // Drawing polyline in the Google Map for the i-th route

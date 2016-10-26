@@ -1,0 +1,42 @@
+{
+  "project_info": {
+    "project_number": "282029044624",
+    "firebase_url": "https://dismapp-b5a64.firebaseio.com",
+    "project_id": "dismapp-b5a64",
+    "storage_bucket": "dismapp-b5a64.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:282029044624:android:88e60ab112b7293d",
+        "android_client_info": {
+          "package_name": "com.example.spairo.dismapp_v12"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "282029044624-t86p8ccn6pv48mihcghqq585b30i3a4j.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBaXkbtvSsmNPs6EoVrd1DMxQr5OzF_ofs"
+        }
+      ],
+      "services": {
+        "analytics_service": {
+          "status": 1
+        },
+        "appinvite_service": {
+          "status": 1,
+          "other_platform_oauth_client": []
+        },
+        "ads_service": {
+          "status": 2
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

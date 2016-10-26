@@ -72,7 +72,7 @@ public class AddMark extends FragmentActivity implements LoaderCallbacks<Cursor>
 
             //Move camera over greece
             LatLng athens = new LatLng(37.9430, 23.6470);
-            map.moveCamera(CameraUpdateFactory.newLatLngZoom(athens, 13));
+            map.moveCamera(CameraUpdateFactory.newLatLngZoom(athens, 18));
         }
 
         map.setOnMapClickListener(new OnMapClickListener() {
