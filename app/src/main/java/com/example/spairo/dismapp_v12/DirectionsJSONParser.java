@@ -39,7 +39,8 @@ public class DirectionsJSONParser {
                     /** Traversing all steps */
                     for(int k=0;k<jSteps.length();k++){
                         String polyline = "";
-                        polyline = (String)((JSONObject)((JSONObject)jSteps.get(k)).get("polyline")).get("points");
+                        polyline = (String)((JSONObject)((JSONObject)jSteps.get(k))
+                                .get("polyline")).get("points");
                         List<LatLng> list = decodePoly(polyline);
 
                         /** Traversing all points */
@@ -60,10 +61,7 @@ public class DirectionsJSONParser {
         return routes;
     }
 
-    /**
-     * Method to decode polyline points
-     * Courtesy : jeffreysambells.com/2010/05/27/decoding-polylines-from-google-maps-direction-api-with-java
-     * */
+    /** Method to decode polyline points */
     private List<LatLng> decodePoly(String encoded) {
 
         List<LatLng> poly = new ArrayList<LatLng>();
@@ -94,7 +92,6 @@ public class DirectionsJSONParser {
                     (((double) lng / 1E5)));
             poly.add(p);
         }
-
         return poly;
     }
 }

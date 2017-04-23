@@ -52,7 +52,7 @@ public class AddRoute extends FragmentActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.get_direction);
+        setContentView(R.layout.add_route);
 
         // Initializing
         markerPoints = new ArrayList<LatLng>();
@@ -99,7 +99,7 @@ public class AddRoute extends FragmentActivity {
                 // Setting the position of the marker
                 options.position(point);
 
-                /**
+                /*
                  * For the start location, the color of marker is GREEN and
                  * for the end location, the color of marker is RED and
                  * for the rest of markers, the color is AZURE
